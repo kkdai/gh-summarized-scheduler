@@ -73,7 +73,7 @@ def home():
         if bot_token and user_id:
             line_bot_api = LineBotApi(bot_token)
             line_bot_api.push_message(user_id, TextSendMessage(text=text))
-        return "OK"
+        return text
     except Exception as e:
         print(e)
         return "Error"

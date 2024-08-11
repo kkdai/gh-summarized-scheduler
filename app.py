@@ -20,20 +20,26 @@ prompt = PromptTemplate.from_template(prompt_template)
 
 
 def summarized_yesterday_github_issues() -> str:
-    # Get yesterday's date in ISO 8601 format with 'Z' for UTC time
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=2)).strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
-    )
+    total_github_issues = 0
+    past_days = 1
 
-    GH_ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
-    loader = GitHubIssuesLoader(
-        repo="kkdai/bookmarks",
-        access_token=GH_ACCESS_TOKEN,  # delete/comment out this argument if you've set the access token as an env var.
-        include_prs=False,
-        since=yesterday,
-    )
-    docs = loader.load()
-    print(f"總共有多少{len(docs)} 筆資料")
+    # 擷取至少五個
+    while total_github_issues <= 5:
+        since_day = (datetime.now(timezone.utc) - timedelta(days=past_days)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+
+        GH_ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
+        loader = GitHubIssuesLoader(
+            repo="kkdai/bookmarks",
+            access_token=GH_ACCESS_TOKEN,  # delete/comment out this argument if you've set the access token as an env var.
+            include_prs=False,
+            since=since_day,
+        )
+        docs = loader.load()
+        print(f"總共有: {len(docs)} 筆資料")
+        total_github_issues = len(docs)
+        past_days += 1
 
     llm = ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",

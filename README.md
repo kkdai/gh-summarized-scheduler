@@ -50,6 +50,7 @@
 
     ```bash
     export GITHUB_TOKEN=your_github_token
+    export GOOGLE_API_KEY=your_gemini_api_key
     ```
 
 2. 執行主程式：
@@ -58,7 +59,7 @@
     python main.py
     ```
 
-    程式會自動從 GitHub Issues 中提取資料並生成摘要，並在終端機中顯示結果。
+    程式會自動從 GitHub Issues 中提取前一天資料並生成摘要，並在終端機中顯示結果。
 
 ## 環境變數
 

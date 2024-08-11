@@ -3,7 +3,7 @@ langchain_core
 langchain_google_genai
 langchain_community
 line-bot-sdk==3.5.0
-flask
+fastapi
 google.generativeai
 pydantic
 tiktoken

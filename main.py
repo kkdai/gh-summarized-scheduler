@@ -6,7 +6,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.summarize import load_summarize_chain
 from langchain_community.document_loaders import GitHubIssuesLoader
 
-from flask import Flask
+from fastapi import Request, FastAPI, HTTPException
 
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -56,12 +56,12 @@ def summarized_yesterday_github_issues() -> str:
     return summary["output_text"]
 
 
-# Initialize the Flask app
-app = Flask(__name__)
+# Initialize the FastAPI app for LINEBot
+app = FastAPI()
 
 
-@app.route("/")
-def home():
+@app.get("/")
+def handle_callback():
     # get from console
     try:
         text = summarized_yesterday_github_issues()
@@ -73,11 +73,7 @@ def home():
         if bot_token and user_id:
             line_bot_api = LineBotApi(bot_token)
             line_bot_api.push_message(user_id, TextSendMessage(text=text))
-        return text
+        return "OK"
     except Exception as e:
         print(e)
         return "Error"
-
-
-if __name__ == "__main__":
-    app.run()

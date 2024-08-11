@@ -1,9 +1,10 @@
-line-bot-sdk==3.5.0
-google.generativeai
 langchain
 langchain_core
 langchain_google_genai
 langchain_community
+line-bot-sdk==3.5.0
+flask
+google.generativeai
 pydantic
 tiktoken
 Pillow

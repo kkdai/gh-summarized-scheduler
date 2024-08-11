@@ -63,6 +63,7 @@
 ## 環境變數
 
 - `GITHUB_TOKEN`: 用於訪問 GitHub API 的個人訪問令牌。
+- `GOOGLE_API_KEY`: 用於產生相關 LLM 總結與相關的推薦文字，作為使用。
 
 ## 貢獻
 

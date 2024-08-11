@@ -8,6 +8,10 @@ from langchain_community.document_loaders import GitHubIssuesLoader
 
 from flask import Flask
 
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
+
 prompt_template = """
 這些資料是我昨天搜集的文章，我想要總結這些資料，請幫我總結一下。 寫成一篇短文來分享我昨天有學到哪些內容，
 幫我在每一段最後加上原有的 URL 連結，這樣我可以隨時回去查看原文。 
@@ -57,13 +61,23 @@ app = Flask(__name__)
 
 
 @app.route("/")
-def hello():
+def home():
     # get from console
-    text = summarized_yesterday_github_issues()
-    print("--------------------")
-    print(text)
-    return "Hello from Cloud Run!"
+    try:
+        text = summarized_yesterday_github_issues()
+        print("--------------------")
+        print(text)
+
+        bot_token = os.getenv("LINE_BOT_TOKEN")
+        user_id = os.getenv("LINE_USER_ID")
+        if bot_token and user_id:
+            line_bot_api = LineBotApi(bot_token)
+            line_bot_api.push_message(user_id, TextSendMessage(text=text))
+        return "OK"
+    except Exception as e:
+        print(e)
+        return "Error"
 
 
 if __name__ == "__main__":
-    hello()
+    app.run()

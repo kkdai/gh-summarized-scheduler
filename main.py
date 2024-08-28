@@ -2,12 +2,8 @@ import os
 
 from gh_tools import summarized_yesterday_github_issues
 from fastapi import FastAPI
-from linebot.v3.messaging import (
-    MessagingApi,
-    Configuration,
-    PushMessageRequest,
-    TextMessage,
-)
+from linebot import LineBotApi, WebhookHandler
+from linebot.models import TextSendMessage
 
 # Load environment variables
 linebot_token = os.getenv("LINE_BOT_TOKEN")
@@ -40,10 +36,6 @@ if not repo_owner:
 # Initialize the FastAPI app for LINEBot
 app = FastAPI()
 
-# Initialize the LINEBot API
-configuration = Configuration(access_token=linebot_token)
-api_client = MessagingApi(configuration)
-
 
 @app.get("/")
 def handle_callback():
@@ -54,11 +46,8 @@ def handle_callback():
         print(text)
 
         if linebot_user_id and linebot_token:
-            api_client.push_message(
-                PushMessageRequest(
-                    to=linebot_user_id, messages=[TextMessage(text=text)]
-                )
-            )
+            line_bot_api = LineBotApi(linebot_token)
+            line_bot_api.push_message(linebot_user_id, TextSendMessage(text=text))
         return "OK"
     except Exception as e:
         print(e)

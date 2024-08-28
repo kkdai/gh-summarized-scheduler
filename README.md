@@ -66,6 +66,8 @@
 ## 環境變數
 
 - `GITHUB_TOKEN`: 用於訪問 GitHub API 的個人訪問令牌。
+- `REPO_OWNER`: 要讀取的 Github Repo Owner.
+- `REPO_NAME`: 要讀取的 Github Repo Name.
 - `GOOGLE_API_KEY`: 用於產生相關 LLM 總結與相關的推薦文字，作為使用。
 - `LINE_BOT_TOKEN`: 用於發送 LINE  Bot Push Message.
 - `LINE_USER_ID`: 特定使用者 ID 。

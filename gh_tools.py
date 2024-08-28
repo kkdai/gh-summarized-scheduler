@@ -16,7 +16,8 @@ Reply in ZH-TW"""
 prompt = PromptTemplate.from_template(prompt_template)
 
 
-def summarized_yesterday_github_issues() -> str:
+# Add two parameter repo_owner and repo_name
+def summarized_yesterday_github_issues(repo_owner: str, repo_name: str) -> str:
     total_github_issues = 0
     past_days = 1
 
@@ -28,7 +29,7 @@ def summarized_yesterday_github_issues() -> str:
 
         GH_ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
         loader = GitHubIssuesLoader(
-            repo="kkdai/bookmarks",
+            repo=f"{repo_owner}/{repo_name}",
             # delete/comment out this argument if you've set the access token as an env var.
             access_token=GH_ACCESS_TOKEN,
             include_prs=False,

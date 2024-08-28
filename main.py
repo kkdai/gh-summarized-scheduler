@@ -1,12 +1,13 @@
 import os
-from gh_tools import summarized_yesterday_github_issues
+
+# from gh_tools import summarized_yesterday_github_issues
 from fastapi import FastAPI
-from linebot.v3.messaging import (
-    MessagingApi,
-    Configuration,
-    PushMessageRequest,
-    TextMessage,
-)
+# from linebot.v3.messaging import (
+#     MessagingApi,
+#     Configuration,
+#     PushMessageRequest,
+#     TextMessage,
+# )
 
 # Load environment variables
 linebot_token = os.getenv("LINE_BOT_TOKEN")
@@ -40,27 +41,27 @@ if not repo_owner:
 app = FastAPI()
 
 # Initialize the LINEBot API
-configuration = Configuration(access_token=linebot_token)
-api_client = MessagingApi(configuration)
+# configuration = Configuration(access_token=linebot_token)
+# api_client = MessagingApi(configuration)
 
 
 @app.get("/")
 def handle_callback():
     # get from console
     try:
-        text = summarized_yesterday_github_issues(github_token, repo_owner, repo_name)
+        # text = summarized_yesterday_github_issues(github_token, repo_owner, repo_name)
         print("--------------------")
-        print(text)
+        # print(text)
 
-        bot_token = os.getenv("LINE_BOT_TOKEN")
-        user_id = os.getenv("LINE_USER_ID")
-        if bot_token and user_id:
-            line_bot_api = MessagingApi(api_client)
-            line_bot_api.push_message(
-                PushMessageRequest(
-                    to=linebot_user_id, messages=[TextMessage(text=text)]
-                )
-            )
+        # bot_token = os.getenv("LINE_BOT_TOKEN")
+        # user_id = os.getenv("LINE_USER_ID")
+        # if bot_token and user_id:
+        #     line_bot_api = MessagingApi(api_client)
+        #     line_bot_api.push_message(
+        #         PushMessageRequest(
+        #             to=linebot_user_id, messages=[TextMessage(text=text)]
+        #         )
+        #     )
         return "OK"
     except Exception as e:
         print(e)

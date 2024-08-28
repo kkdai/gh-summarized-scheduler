@@ -54,8 +54,7 @@ def handle_callback():
         print(text)
 
         if linebot_user_id and linebot_token:
-            line_bot_api = MessagingApi(api_client)
-            line_bot_api.push_message(
+            api_client.push_message(
                 PushMessageRequest(
                     to=linebot_user_id, messages=[TextMessage(text=text)]
                 )

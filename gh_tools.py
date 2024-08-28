@@ -17,7 +17,9 @@ prompt = PromptTemplate.from_template(prompt_template)
 
 
 # Add two parameter repo_owner and repo_name
-def summarized_yesterday_github_issues(repo_owner: str, repo_name: str) -> str:
+def summarized_yesterday_github_issues(
+    github_token: str, repo_owner: str, repo_name: str
+) -> str:
     total_github_issues = 0
     past_days = 1
 
@@ -27,11 +29,10 @@ def summarized_yesterday_github_issues(repo_owner: str, repo_name: str) -> str:
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
-        GH_ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
         loader = GitHubIssuesLoader(
             repo=f"{repo_owner}/{repo_name}",
             # delete/comment out this argument if you've set the access token as an env var.
-            access_token=GH_ACCESS_TOKEN,
+            access_token=github_token,
             include_prs=False,
             since=since_day,
         )

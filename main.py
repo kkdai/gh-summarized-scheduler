@@ -48,7 +48,7 @@ api_client = MessagingApi(configuration)
 def handle_callback():
     # get from console
     try:
-        text = summarized_yesterday_github_issues(repo_owner, repo_name)
+        text = summarized_yesterday_github_issues(github_token, repo_owner, repo_name)
         print("--------------------")
         print(text)
 

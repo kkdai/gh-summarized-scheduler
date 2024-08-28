@@ -1,8 +1,9 @@
 import os
 from gh_tools import summarized_yesterday_github_issues
 from fastapi import FastAPI
-from linebot import LineBotApi
 from linebot.models import TextSendMessage
+from linebot.aiohttp_async_http_client import AiohttpAsyncHttpClient
+from linebot import AsyncLineBotApi
 
 # Load environment variables
 
@@ -48,7 +49,11 @@ def handle_callback():
         bot_token = os.getenv("LINE_BOT_TOKEN")
         user_id = os.getenv("LINE_USER_ID")
         if bot_token and user_id:
-            line_bot_api = LineBotApi(bot_token)
+            line_bot_api = AsyncLineBotApi(
+                channel_access_token=bot_token,
+                http_client=AiohttpAsyncHttpClient(),
+            )
+
             line_bot_api.push_message(user_id, TextSendMessage(text=text))
         return "OK"
     except Exception as e:

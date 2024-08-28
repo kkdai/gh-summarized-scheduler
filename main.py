@@ -1,15 +1,14 @@
 import os
 from gh_tools import summarized_yesterday_github_issues
 from fastapi import FastAPI
-from linebot.models import TextSendMessage
-from linebot.aiohttp_async_http_client import AiohttpAsyncHttpClient
-from linebot import AsyncLineBotApi
+from linebot.v3.messaging import (
+    MessagingApi,
+    Configuration,
+    PushMessageRequest,
+    TextMessage,
+)
 
 # Load environment variables
-
-
-# Initialize the FastAPI app for LINEBot
-app = FastAPI()
 linebot_token = os.getenv("LINE_BOT_TOKEN")
 linebot_user_id = os.getenv("LINE_USER_ID")
 google_api_key = os.getenv("GOOGLE_API_KEY")
@@ -37,6 +36,13 @@ if not repo_owner:
     print("REPO_OWNER is not set")
     exit(1)
 
+# Initialize the FastAPI app for LINEBot
+app = FastAPI()
+
+# Initialize the LINEBot API
+configuration = Configuration(access_token=linebot_token)
+api_client = MessagingApi(configuration)
+
 
 @app.get("/")
 def handle_callback():
@@ -49,12 +55,12 @@ def handle_callback():
         bot_token = os.getenv("LINE_BOT_TOKEN")
         user_id = os.getenv("LINE_USER_ID")
         if bot_token and user_id:
-            line_bot_api = AsyncLineBotApi(
-                channel_access_token=bot_token,
-                http_client=AiohttpAsyncHttpClient(),
+            line_bot_api = MessagingApi(api_client)
+            line_bot_api.push_message(
+                PushMessageRequest(
+                    to=linebot_user_id, messages=[TextMessage(text=text)]
+                )
             )
-
-            line_bot_api.push_message(user_id, TextSendMessage(text=text))
         return "OK"
     except Exception as e:
         print(e)

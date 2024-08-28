@@ -1,6 +1,6 @@
 import os
 
-# from gh_tools import summarized_yesterday_github_issues
+from gh_tools import summarized_yesterday_github_issues
 from fastapi import FastAPI
 # from linebot.v3.messaging import (
 #     MessagingApi,
@@ -49,9 +49,9 @@ app = FastAPI()
 def handle_callback():
     # get from console
     try:
-        # text = summarized_yesterday_github_issues(github_token, repo_owner, repo_name)
+        text = summarized_yesterday_github_issues(github_token, repo_owner, repo_name)
         print("--------------------")
-        # print(text)
+        print(text)
 
         # bot_token = os.getenv("LINE_BOT_TOKEN")
         # user_id = os.getenv("LINE_USER_ID")

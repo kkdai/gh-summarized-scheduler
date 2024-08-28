@@ -1,0 +1,33 @@
+{
+    "name": "github helper",
+    "description": "",
+    "repository": "https://github.com/kkdai/gh-summarized-scheduler",
+    "keywords": [
+        "python",
+        "linebot",
+        "gemini",
+        "firebase"
+    ],
+    "buildpacks": [
+        {
+            "url": "https://github.com/heroku/heroku-buildpack-python.git"
+        },
+        {
+            "url": "heroku/python"
+        }
+    ],
+    "env": {
+        "GEMINI_API_KEY": {
+            "description": "GEMINI API KEY",
+            "required": true
+        },
+        "ChannelAccessToken": {
+            "description": "Channel Access Token",
+            "required": true
+        },
+        "ChannelSecret": {
+            "description": "Channel Secret",
+            "required": true
+        }
+    }
+}

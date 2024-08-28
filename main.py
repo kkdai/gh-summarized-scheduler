@@ -1,63 +1,32 @@
 import os
-from datetime import datetime, timedelta, timezone
+from gh_tools import summarized_yesterday_github_issues
+from fastapi import FastAPI
+from linebot import LineBotApi
+from linebot.models import TextSendMessage
 
-from langchain_core.prompts import PromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chains.summarize import load_summarize_chain
-from langchain_community.document_loaders import GitHubIssuesLoader
-
-from fastapi import Request, FastAPI, HTTPException
-
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
-
-prompt_template = """
-這些資料是我昨天搜集的文章，我想要總結這些資料，請幫我總結一下。 寫成一篇短文來分享我昨天有學到哪些內容，
-幫我在每一段最後加上原有的 URL 連結，這樣我可以隨時回去查看原文。 
-請去除掉所有的 tags, links, 和其他不必要的資訊，只保留文章的主要內容，我的角色是 Evan ，喜歡 LLM 跟 AI 相關的技術。:
-"{text}"
-CONCISE SUMMARY:
-Reply in ZH-TW"""
-prompt = PromptTemplate.from_template(prompt_template)
-
-
-def summarized_yesterday_github_issues() -> str:
-    total_github_issues = 0
-    past_days = 1
-
-    # 擷取至少五個
-    while total_github_issues <= 5:
-        since_day = (datetime.now(timezone.utc) - timedelta(days=past_days)).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
-
-        GH_ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
-        loader = GitHubIssuesLoader(
-            repo="kkdai/bookmarks",
-            access_token=GH_ACCESS_TOKEN,  # delete/comment out this argument if you've set the access token as an env var.
-            include_prs=False,
-            since=since_day,
-        )
-        docs = loader.load()
-        print(f"總共有: {len(docs)} 筆資料")
-        total_github_issues = len(docs)
-        past_days += 1
-
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash",
-        temperature=0,
-        max_tokens=None,
-        timeout=None,
-        max_retries=2,
-    )
-    chain = load_summarize_chain(llm, chain_type="stuff", prompt=prompt)
-    summary = chain.invoke(docs)
-    return summary["output_text"]
+# Load environment variables
 
 
 # Initialize the FastAPI app for LINEBot
 app = FastAPI()
+linebot_token = os.getenv("LINE_BOT_TOKEN")
+linebot_user_id = os.getenv("LINE_USER_ID")
+google_api_key = os.getenv("GOOGLE_API_KEY")
+github_token = os.getenv("GITHUB_TOKEN")
+
+# check if the environment variables are set
+if not linebot_token:
+    print("LINE_BOT_TOKEN is not set")
+    exit(1)
+if not linebot_user_id:
+    print("LINE_USER_ID is not set")
+    exit(1)
+if not google_api_key:
+    print("GOOGLE_API_KEY is not set")
+    exit(1)
+if not github_token:
+    print("GITHUB_TOKEN is not set")
+    exit(1)
 
 
 @app.get("/")

@@ -51,6 +51,8 @@
     ```bash
     export GITHUB_TOKEN=your_github_token
     export GOOGLE_API_KEY=your_gemini_api_key
+    export LINE_BOT_TOKEN=your_linebot_token
+    export LINE_USER_ID=your_user_id
     ```
 
 2. 執行主程式：
@@ -59,12 +61,14 @@
     python main.py
     ```
 
-    程式會自動從 GitHub Issues 中提取前一天資料並生成摘要，並在終端機中顯示結果。
+    程式會自動從 GitHub Issues 中提取前一天資料並生成摘要，並在 LINE Bot 中發送訊息提醒。
 
 ## 環境變數
 
 - `GITHUB_TOKEN`: 用於訪問 GitHub API 的個人訪問令牌。
 - `GOOGLE_API_KEY`: 用於產生相關 LLM 總結與相關的推薦文字，作為使用。
+- `LINE_BOT_TOKEN`: 用於發送 LINE  Bot Push Message.
+- `LINE_USER_ID`: 特定使用者 ID 。
 
 ## 貢獻
 

@@ -8,4 +8,3 @@ google.generativeai
 pydantic
 tiktoken
 Pillow
-firebase-admin

@@ -53,9 +53,7 @@ def handle_callback():
         print("--------------------")
         print(text)
 
-        bot_token = os.getenv("LINE_BOT_TOKEN")
-        user_id = os.getenv("LINE_USER_ID")
-        if bot_token and user_id:
+        if linebot_user_id and linebot_token:
             line_bot_api = MessagingApi(api_client)
             line_bot_api.push_message(
                 PushMessageRequest(

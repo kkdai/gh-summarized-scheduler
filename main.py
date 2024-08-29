@@ -65,7 +65,8 @@ async def hacker_news_sumarization(request: Request):
         print(f"Title: {title}\nURL: {url}")
         text = summarize_with_sherpa(url)
         print(text)
-        send_msg(linebot_user_id, linebot_token, text)
+        out_text = f"title: {title} \nurl: {url} \nSummary:\n {text}"
+        send_msg(linebot_user_id, linebot_token, out_text)
         return "OK"
     except Exception as e:
         print(e)

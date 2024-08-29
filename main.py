@@ -1,9 +1,13 @@
 import os
 
-from gh_tools import summarized_yesterday_github_issues
 from fastapi import FastAPI
-from linebot import LineBotApi, WebhookHandler
+from fastapi import Request
+
+from linebot import LineBotApi
 from linebot.models import TextSendMessage
+
+from gh_tools import summarized_yesterday_github_issues
+from langtools import summarize_with_sherpa
 
 # Load environment variables
 linebot_token = os.getenv("LINE_BOT_TOKEN")
@@ -37,18 +41,39 @@ if not repo_owner:
 app = FastAPI()
 
 
-@app.get("/")
-def handle_callback():
+@app.get("/ds")
+def github_issue_daily_summarization():
     # get from console
     try:
+        print("-------github_issue_daily_summarization------")
         text = summarized_yesterday_github_issues(github_token, repo_owner, repo_name)
-        print("--------------------")
         print(text)
-
-        if linebot_user_id and linebot_token:
-            line_bot_api = LineBotApi(linebot_token)
-            line_bot_api.push_message(linebot_user_id, TextSendMessage(text=text))
+        send_msg(linebot_user_id, linebot_token, text)
         return "OK"
     except Exception as e:
         print(e)
         return "Error"
+
+
+@app.post("/hn")
+async def hacker_news_sumarization(request: Request):
+    try:
+        print("-------hacker_news_sumarization------")
+        data = await request.json()
+        title = data.get("title")
+        url = data.get("url")
+        print(f"Title: {title}\nURL: {url}")
+        text = summarize_with_sherpa(url)
+        print(text)
+        send_msg(linebot_user_id, linebot_token, text)
+        return "OK"
+    except Exception as e:
+        print(e)
+        return "Error"
+
+
+def send_msg(linebot_user_id, linebot_token, text):
+    if linebot_user_id and linebot_token:
+        line_bot_api = LineBotApi(linebot_token)
+        line_bot_api.push_message(linebot_user_id, TextSendMessage(text=text))
+    return "OK"

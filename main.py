@@ -79,6 +79,34 @@ async def hacker_news_sumarization(request: Request):
         return "Error"
 
 
+@app.post("/hf")
+async def huggingface_paper_sumarziation(request: Request):
+    try:
+        print("-------HuggingFace_Paper_sumarization------")
+        data = await request.json()
+        title = data.get("title")
+        papertocode_url = data.get("url")
+        print(f"Papertocode URL: {papertocode_url}")
+        # replace "https://paperswithcode.com/papers/2408.16046" to "https://huggingface.co/papers/2408.16046"
+        url = papertocode_url.replace("paperswithcode.com", "huggingface.co")
+
+        print(f"Title: {title}\nURL: {url}")
+        result = summarize_with_sherpa(url)
+        if not result:
+            # Handle the error case, e.g., log the error or set a default message
+            result = "An error occurred while summarizing the document."
+            print(result)
+        elif len(result) > 2000:
+            result = summarize_text(result)
+            print(result)
+            out_text = f"title: {title} \nurl: {url} \nSummary:\n {result}"
+            send_msg(linebot_user_id, linebot_token, out_text)
+        return "OK"
+    except Exception as e:
+        print(e)
+        return "Error"
+
+
 def send_msg(linebot_user_id, linebot_token, text):
     if linebot_user_id and linebot_token:
         line_bot_api = LineBotApi(linebot_token)

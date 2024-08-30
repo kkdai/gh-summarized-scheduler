@@ -1,5 +1,6 @@
 # Adjust the import as necessary
 import os
+import re
 import requests
 from langchain.chains.summarize import load_summarize_chain
 from langchain.docstore.document import Document
@@ -12,10 +13,11 @@ os.environ["USER_AGENT"] = "myagent"
 
 
 def summarize_with_sherpa(url: str) -> str:
-    '''
+    """
     Summarize a document from a URL using the LLM Sherpa API.
-    '''
+    """
     try:
+        url = find_url(url)
         response = requests.head(url)
         response.raise_for_status()  # Raise an HTTPError for bad responses
         content_type = response.headers.get("content-type")
@@ -27,13 +29,17 @@ def summarize_with_sherpa(url: str) -> str:
             "application/xml",
             "application/pdf",
         ]
-        loader = LLMSherpaFileLoader(
-            file_path=url,
-            new_indent_parser=True,
-            apply_ocr=True,
-            strategy="text",
-            llmsherpa_api_url="https://readers.llmsherpa.com/api/document/developer/parseDocument?renderFormat=all",
-        ) if content_type in allowed_types else WebBaseLoader(url)
+        loader = (
+            LLMSherpaFileLoader(
+                file_path=url,
+                new_indent_parser=True,
+                apply_ocr=True,
+                strategy="text",
+                llmsherpa_api_url="https://readers.llmsherpa.com/api/document/developer/parseDocument?renderFormat=all",
+            )
+            if content_type in allowed_types
+            else WebBaseLoader(url)
+        )
         docs = loader.load()
         return docs[0].page_content
     except Exception as e:
@@ -43,9 +49,9 @@ def summarize_with_sherpa(url: str) -> str:
 
 
 def generate_twitter_post(input_text: str) -> str:
-    '''
+    """
     Generate a Twitter post using the Google Generative AI model.
-    '''
+    """
     model = ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0.5,
@@ -62,15 +68,14 @@ def generate_twitter_post(input_text: str) -> str:
     prompt = PromptTemplate.from_template(prompt_template)
 
     chain = prompt | model
-    tweet = chain.invoke(
-        {"text": input_text})
+    tweet = chain.invoke({"text": input_text})
     return tweet.content
 
 
 def generate_slack_post(input_text: str) -> str:
-    '''
+    """
     Generate a Slack post using the Google Generative AI model.
-    '''
+    """
     model = ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0.5,
@@ -87,15 +92,14 @@ def generate_slack_post(input_text: str) -> str:
     prompt = PromptTemplate.from_template(prompt_template)
 
     chain = prompt | model
-    tweet = chain.invoke(
-        {"text": input_text})
+    tweet = chain.invoke({"text": input_text})
     return tweet.content
 
 
 def summarize_text(text: str, max_tokens: int = 100) -> str:
-    '''
+    """
     Summarize a text using the Google Generative AI model.
-    '''
+    """
     llm = ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0,
@@ -110,8 +114,21 @@ def summarize_text(text: str, max_tokens: int = 100) -> str:
     Reply in ZH-TW"""
     prompt = PromptTemplate.from_template(prompt_template)
 
-    summarize_chain = load_summarize_chain(
-        llm=llm, chain_type="stuff", prompt=prompt)
+    summarize_chain = load_summarize_chain(llm=llm, chain_type="stuff", prompt=prompt)
     document = Document(page_content=text)
     summary = summarize_chain.invoke([document])
     return summary["output_text"]
+
+
+def find_url(input_string):
+    # Regular expression pattern to match URLs
+    url_pattern = r"https?://[^\s]+"
+
+    # Search for the pattern in the input string
+    match = re.search(url_pattern, input_string)
+
+    # If a match is found, return the URL, otherwise return an empty string
+    if match:
+        return match.group(0)
+    else:
+        return ""

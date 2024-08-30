@@ -7,7 +7,7 @@ from linebot import LineBotApi
 from linebot.models import TextSendMessage
 
 from gh_tools import summarized_yesterday_github_issues
-from langtools import summarize_with_sherpa
+from langtools import summarize_with_sherpa, summarize_text
 
 # Load environment variables
 linebot_token = os.getenv("LINE_BOT_TOKEN")
@@ -63,10 +63,16 @@ async def hacker_news_sumarization(request: Request):
         title = data.get("title")
         url = data.get("url")
         print(f"Title: {title}\nURL: {url}")
-        text = summarize_with_sherpa(url)
-        print(text)
-        out_text = f"title: {title} \nurl: {url} \nSummary:\n {text}"
-        send_msg(linebot_user_id, linebot_token, out_text)
+        result = summarize_with_sherpa(url)
+        if not result:
+            # Handle the error case, e.g., log the error or set a default message
+            result = "An error occurred while summarizing the document."
+            print(result)
+        elif len(result) > 2000:
+            result = summarize_text(result)
+            print(result)
+            out_text = f"title: {title} \nurl: {url} \nSummary:\n {result}"
+            send_msg(linebot_user_id, linebot_token, out_text)
         return "OK"
     except Exception as e:
         print(e)

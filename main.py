@@ -71,7 +71,7 @@ async def hacker_news_sumarization(request: Request):
         elif len(result) > 2000:
             result = summarize_text(result)
             print(result)
-            out_text = f"title: {title} \nurl: {url} \nSummary:\n {result}"
+            out_text = f"{title} \n{url} \n{result}"
             send_msg(linebot_user_id, linebot_token, out_text)
         return "OK"
     except Exception as e:
@@ -99,7 +99,7 @@ async def huggingface_paper_sumarziation(request: Request):
         elif len(result) > 2000:
             result = summarize_text(result)
             print(result)
-            out_text = f"title: {title} \nurl: {url} \nSummary:\n {result}"
+            out_text = f"{title} \n{url} \n{result}"
             send_msg(linebot_user_id, linebot_token, out_text)
         return "OK"
     except Exception as e:

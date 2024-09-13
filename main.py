@@ -80,8 +80,8 @@ def handle_summarization(title, url, summarization_func):
 
 def handle_summary_result(result):
     if not result:
-        result = "An error occurred while summarizing the document."
-        print(result)
+        print("An error occurred while summarizing the document.")
+        return None
     elif len(result) > 2000:
         result = summarize_text(result)
         print(result)

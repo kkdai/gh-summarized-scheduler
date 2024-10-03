@@ -34,6 +34,13 @@ for var_name, var_value in required_env_vars.items():
 app = FastAPI()
 
 
+# add "/" for health check
+@app.get("/")
+def health_check():
+    print("Health Check! Ok!")
+    return "OK"
+
+
 @app.get("/ds")
 def github_issue_daily_summarization():
     return handle_summarization(

@@ -10,3 +10,4 @@ pydantic
 tiktoken
 Pillow
 beautifulsoup4
+firebase-admin

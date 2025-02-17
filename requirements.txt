@@ -10,4 +10,5 @@ pydantic
 tiktoken
 Pillow
 beautifulsoup4
+regex
 firebase-admin

@@ -71,14 +71,25 @@ async def huggingface_paper_summarization(request: Request):
     return handle_summarization(title, url, summarize_with_sherpa)
 
 
-# 新增 webhook: 處理 POST JSON 資料（例如健身紀錄）
+# 修改 webhook: 處理 POST JSON 資料（例如健身紀錄）
 @app.post("/threads")
 async def thread_webhook(request: Request):
     data = await request.json()
-    # 如果傳進來的是字串，轉換成 dict
-    if isinstance(data, str):
+    # 若收到 dict 並含 "content" 欄位，使用其內容進行解析
+    if isinstance(data, dict) and "content" in data:
+        parsed = parse_workout_record(data["content"])
+        # 保留 CreatedAt 欄位
+        if "CreatedAt" in data:
+            parsed["CreatedAt"] = data["CreatedAt"]
+        # 若解析結果不包含必要資料，則不儲存
+        if parsed.get("running_time") is None and not parsed.get("exercises"):
+            return {
+                "status": "OK",
+                "message": "Data did not match expected format, not stored.",
+            }
+        data = parsed
+    elif isinstance(data, str):
         parsed = parse_workout_record(data)
-        # 若結果沒有設定 running_time 且 exercises 為空，則認為格式不符
         if parsed.get("running_time") is None and not parsed.get("exercises"):
             return {
                 "status": "OK",
@@ -86,13 +97,13 @@ async def thread_webhook(request: Request):
             }
         data = parsed
     else:
-        # Optionally, you can add similar validation for dict payloads
+        # 若無法判斷格式，視為格式不符
         if data.get("running_time") is None and not data.get("exercises"):
             return {
                 "status": "OK",
                 "message": "Data did not match expected format, not stored.",
             }
-    # 資料格式符合，存進 Firebase 的 /threads 路徑
+    # 儲存資料到 Firebase 的 /threads 路徑
     add_data("/threads", data)
     return {"status": "OK", "message": "Data received and stored."}
 

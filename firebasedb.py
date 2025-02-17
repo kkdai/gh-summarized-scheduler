@@ -1,12 +1,9 @@
 import os
-import json
 import firebase_admin
 from firebase_admin import credentials, db
 
 # Initialize Firebase Admin
 firebase_url = os.environ["FIREBASE_URL"]
-# service_account_info = json.loads(os.environ['GOOGLE_CREDENTIALS'])
-# cred = credentials.Certificate(service_account_info)
 cred = credentials.ApplicationDefault()
 
 if not firebase_admin._apps:

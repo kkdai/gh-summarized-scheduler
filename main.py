@@ -3,6 +3,8 @@ import os
 from fastapi import FastAPI, Request
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
+from firebasedb import add_data  # new import
+from parsers import parse_workout_record  # new import
 
 from gh_tools import summarized_yesterday_github_issues
 from langtools import summarize_with_sherpa, summarize_text
@@ -67,6 +69,18 @@ async def huggingface_paper_summarization(request: Request):
     papertocode_url = data.get("url")
     url = replace_domain(papertocode_url, "paperswithcode.com", "huggingface.co")
     return handle_summarization(title, url, summarize_with_sherpa)
+
+
+# 新增 webhook: 處理 POST JSON 資料（例如健身紀錄）
+@app.post("/threads")
+async def thread_webhook(request: Request):
+    data = await request.json()
+    # 如果傳進來的是字串，轉換成 dict
+    if isinstance(data, str):
+        data = parse_workout_record(data)
+    # 將收到的資料存進 Firebase 的 /threads 路徑
+    add_data("/threads", data)
+    return {"status": "OK", "message": "Data received and stored."}
 
 
 def handle_summarization(title, url, summarization_func):

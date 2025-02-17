@@ -77,8 +77,22 @@ async def thread_webhook(request: Request):
     data = await request.json()
     # 如果傳進來的是字串，轉換成 dict
     if isinstance(data, str):
-        data = parse_workout_record(data)
-    # 將收到的資料存進 Firebase 的 /threads 路徑
+        parsed = parse_workout_record(data)
+        # 若結果沒有設定 running_time 且 exercises 為空，則認為格式不符
+        if parsed.get("running_time") is None and not parsed.get("exercises"):
+            return {
+                "status": "OK",
+                "message": "Data did not match expected format, not stored.",
+            }
+        data = parsed
+    else:
+        # Optionally, you can add similar validation for dict payloads
+        if data.get("running_time") is None and not data.get("exercises"):
+            return {
+                "status": "OK",
+                "message": "Data did not match expected format, not stored.",
+            }
+    # 資料格式符合，存進 Firebase 的 /threads 路徑
     add_data("/threads", data)
     return {"status": "OK", "message": "Data received and stored."}
 

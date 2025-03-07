@@ -74,6 +74,11 @@ async def huggingface_paper_summarization(request: Request):
 # 修改 webhook: 處理 POST JSON 資料（例如健身紀錄）
 @app.post("/threads")
 async def thread_webhook(request: Request):
+    # print detail of request
+    print(request)
+    print(f"headers:{request.headers}")
+    print(f"body:{request.body}")
+
     data = await request.json()
     # 若收到 dict 並含 "content" 欄位，使用其內容進行解析
     if isinstance(data, dict) and "content" in data:

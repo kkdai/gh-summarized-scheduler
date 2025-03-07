@@ -77,7 +77,10 @@ async def thread_webhook(request: Request):
     # print detail of request
     print(request)
     print(f"headers:{request.headers}")
-    print(f"body:{request.body}")
+
+    # print detail body to check if it is json data.
+    body = await request.body()
+    print(f"body:{body}")
 
     data = await request.json()
     # 若收到 dict 並含 "content" 欄位，使用其內容進行解析

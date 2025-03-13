@@ -1,11 +1,11 @@
 import os
+import json
 
 from fastapi import FastAPI, Request
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 from firebasedb import add_data  # new import
 from parsers import parse_workout_record  # new import
-
 from gh_tools import summarized_yesterday_github_issues
 from langtools import summarize_with_sherpa, summarize_text
 
@@ -74,16 +74,35 @@ async def huggingface_paper_summarization(request: Request):
 # 修改 webhook: 處理 POST JSON 資料（例如健身紀錄）
 @app.post("/threads")
 async def thread_webhook(request: Request):
-    # print detail of request
-    print(request)
-    print(f"headers:{request.headers}")
+    # Print request details for debugging
+    print(f"Request: {request}")
+    print(f"Headers: {request.headers}")
 
-    # print detail body to check if it is json data.
-    body = await request.body()
-    print(f"body:{body}")
+    # Get raw body
+    raw_body = await request.body()
+    print(f"Raw Body: {raw_body}")
 
-    data = await request.json()
-    # 若收到 dict 並含 "content" 欄位，使用其內容進行解析
+    try:
+        # Try to parse JSON directly from request
+        data = await request.json()
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}")
+        try:
+            # Attempt to clean up and parse the raw body
+            body_str = raw_body.decode("utf-8")
+            # Replace unescaped control characters
+            body_str = (
+                body_str.replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t")
+            )
+            data = json.loads(body_str)
+            print(f"Corrected JSON: {data}")
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            # If still fails, return error
+            error_msg = f"Unable to parse request data: {str(e)}"
+            print(error_msg)
+            return {"status": "error", "message": error_msg}
+
+    # Process the successfully parsed data
     if isinstance(data, dict) and "content" in data:
         parsed = parse_workout_record(data["content"])
         # 保留 CreatedAt 欄位

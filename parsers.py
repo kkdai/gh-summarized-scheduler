@@ -23,7 +23,7 @@ except ValueError as e:
 # Handling potential errors during model initialization
 try:
     model = genai.GenerativeModel(
-        "gemini-pro"
+        "gemini-1.5-flash"
     )  # Or your chosen model, e.g., 'gemini-1.5-flash'
 except Exception as e:
     print(f"Error initializing Gemini model: {e}")

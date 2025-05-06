@@ -5,7 +5,7 @@ langchain_google_genai
 langchain_community
 line-bot-sdk
 fastapi
-google.generativeai
+google-generativeai
 pydantic
 tiktoken
 Pillow

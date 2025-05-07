@@ -31,9 +31,10 @@ except Exception as e:
 
 
 def parse_workout_record(record: str) -> dict:
+    # Removed skip_keywords list and associated logic
+
     if not model:
         print("Gemini model not initialized. Cannot parse workout record.")
-        # Return a default or error structure
         return {
             "date": datetime.now().strftime("%Y-%m-%d"),
             "running_time": None,
@@ -43,30 +44,33 @@ def parse_workout_record(record: str) -> dict:
             "notes": "Error: Gemini model not available.",
         }
 
-    # 1. Construct a prompt for the Gemini model.
+    # 1. Construct an updated prompt for the Gemini model.
+    # This prompt asks Gemini to first classify the text.
     prompt_text = f"""
-    Parse the following workout log:
-    "{record}"
-    Extract the information into a JSON object with fields:
-    - date (string, YYYY-MM-DD, use today if not found: {datetime.now().strftime("%Y-%m-%d")})
-    - running_time (integer, minutes, null if not applicable)
-    - running_speed (float, km/h or mph, null if not applicable)
-    - max_heart_rate (integer, bpm, null if not applicable)
-    - exercises (list of objects: [{{'name': 'str', 'weight': 'float', 'reps': 'int', 'sets': 'int'}}], null if not applicable or empty list if no exercises)
-    - notes (string, any remaining text or observations)
-    Return only the JSON object. Ensure the output is a valid JSON.
-    If a field is not mentioned, set its value to null (or an empty list for exercises).
-    Example of an exercise entry: {{'name': 'Bench Press', 'weight': 70.5, 'reps': 10, 'sets': 3}}
-    """
+Analyze the following text:
+"{record}"
+
+First, determine if this text primarily describes a physical workout or exercise session.
+If it is NOT primarily a workout log, return ONLY the JSON object: {{'is_workout_log': false}}.
+If it IS primarily a workout log, then extract the information into a JSON object with the following fields:
+- is_workout_log (boolean, set to true)
+- date (string, YYYY-MM-DD, use today if not found: {datetime.now().strftime('%Y-%m-%d')})
+- running_time (integer, total minutes spent running, null if not applicable)
+- running_speed (float, average speed in km/h or mph. For example, if the text says '跑步 20 mins (7.0 10mins, ...)', then 7.0 is the speed. Set to null if not applicable or not found.)
+- max_heart_rate (integer, bpm, null if not applicable)
+- exercises (list of objects: [{{'name': 'str', 'weight': 'float', 'reps': 'int', 'sets': 'int'}}], null if not applicable or an empty list if no exercises)
+- notes (string, any remaining text or observations)
+
+Return only the JSON object. Ensure the output is a valid JSON.
+If a field (other than is_workout_log) is not mentioned in a workout log, set its value to null (or an empty list for exercises).
+Example of an exercise entry: {{'name': 'Bench Press', 'weight': 70.5, 'reps': 10, 'sets': 3}}
+"""
 
     # 2. Call the Gemini API and parse its response.
     parsed_by_gemini = {}
     try:
-        # Ensure the model is available before attempting to generate content
         if model:
             response = model.generate_content(prompt_text)
-            # Attempt to clean and parse the response text as JSON
-            # Gemini might sometimes return the JSON wrapped in markdown (```json ... ```)
             cleaned_response_text = response.text.strip()
             if cleaned_response_text.startswith("```json"):
                 cleaned_response_text = cleaned_response_text[7:]
@@ -74,6 +78,15 @@ def parse_workout_record(record: str) -> dict:
                 cleaned_response_text = cleaned_response_text[:-3]
 
             parsed_by_gemini = json.loads(cleaned_response_text)
+
+            # Check if Gemini classified it as a workout log
+            # Default to False if "is_workout_log" is missing, or if it's explicitly false.
+            if not parsed_by_gemini.get("is_workout_log", False):
+                print(
+                    "Gemini determined the record is not a workout log, or the format was unexpected."
+                )
+                return {}  # Return empty dict if not a workout log
+
         else:
             raise Exception("Gemini model is not available.")
 
@@ -82,16 +95,15 @@ def parse_workout_record(record: str) -> dict:
         print(
             f"Gemini raw response: {response.text if 'response' in locals() else 'No response object'}"
         )
-        # Fallback or re-raise
-        parsed_by_gemini = {
-            "notes": f"Failed to parse Gemini response. Raw: {response.text if 'response' in locals() else 'No response object'}"
-        }
+        # If JSON decoding fails, it's unlikely to be a valid workout log by our criteria
+        return {}
     except Exception as e:
         print(f"Error interacting with Gemini: {e}")
-        # Fallback or re-raise
-        parsed_by_gemini = {"notes": f"Error during Gemini interaction: {e}"}
+        # Other errors during Gemini interaction also lead to skipping
+        return {}
 
     # 3. Map the data from Gemini to the function's expected return dictionary.
+    # "is_workout_log" is not part of the final output structure.
     result = {
         "date": parsed_by_gemini.get("date", datetime.now().strftime("%Y-%m-%d")),
         "running_time": parsed_by_gemini.get("running_time"),
